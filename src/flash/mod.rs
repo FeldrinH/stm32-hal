@@ -40,7 +40,7 @@ cfg_if! {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, defmt::Format)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 /// Possible error states for flash operations.
 pub enum FlashError {
     /// Flash controller is not done yet

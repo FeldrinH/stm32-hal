@@ -23,7 +23,7 @@ pub enum I2cDevice {
 }
 
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, Eq, PartialEq, defmt::Format)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum I2cError {
     // Note: The  error type is not currently returned, but is maintained for backwards
     // compatibility.
