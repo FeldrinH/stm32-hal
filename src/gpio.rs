@@ -311,18 +311,14 @@ macro_rules! set_alt {
 }
 
 macro_rules! get_input_data {
-    ($regs: expr, $pin:expr, [$($num:expr),+]) => {
-        paste! {
-            unsafe {
-                match $pin {
-                    $(
-                        #[cfg(any(feature = "h5", feature = "c0"))]
-                        $num => (*$regs).idr().read().[<id $num>]().bit_is_set(),
-                        #[cfg(not(any(feature = "h5", feature = "c0")))]
-                        $num => (*$regs).idr().read().[<idr $num>]().bit_is_set(),
-                    )+
-                    _ => panic!("GPIO pins must be 0 - 15."),
-                }
+    ($regs: expr, $pin:expr) => {
+        unsafe {
+            match $pin {
+                #[cfg(any(feature = "h5", feature = "c0"))]
+                validated_pin @ 0..16 => (*$regs).idr().read().id(validated_pin).bit_is_set(),
+                #[cfg(not(any(feature = "h5", feature = "c0")))]
+                validated_pin @ 0..16 => (*$regs).idr().read().idr(validated_pin).bit_is_set(),
+                _ => panic!("GPIO pins must be 0 - 15."),
             }
         }
     }
@@ -919,8 +915,7 @@ impl Pin {
     pub fn get_state(&mut self) -> PinState {
         let val = get_input_data!(
             self.regs(),
-            self.pin,
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+            self.pin
         );
         if val { PinState::High } else { PinState::Low }
     }
@@ -1030,8 +1025,7 @@ impl Pin {
     pub fn is_high(&self) -> bool {
         get_input_data!(
             self.regs(),
-            self.pin,
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+            self.pin
         )
     }
 
@@ -1113,8 +1107,7 @@ impl StatefulOutputPin for Pin {
 pub fn is_high(port: Port, pin: u8) -> bool {
     get_input_data!(
         regs(port),
-        pin,
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        pin
     )
 }
 
