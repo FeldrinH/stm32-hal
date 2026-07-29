@@ -329,15 +329,11 @@ macro_rules! get_input_data {
 }
 
 macro_rules! set_state {
-    ($regs: expr, $pin:expr, $offset: expr, [$($num:expr),+]) => {
-        paste! {
-            unsafe {
-                match $pin {
-                    $(
-                        $num => (*$regs).bsrr().write(|w| w.bits(1 << ($offset + $num))),
-                    )+
-                    _ => panic!("GPIO pins must be 0 - 15."),
-                }
+    ($regs: expr, $pin:expr, $offset: expr) => {
+        unsafe {
+            match $pin {
+                validated_pin @ 0..16 => (*$regs).bsrr().write(|w| w.bits(1 << ($offset + validated_pin))),
+                _ => panic!("GPIO pins must be 0 - 15."),
             }
         }
     }
@@ -940,8 +936,7 @@ impl Pin {
         set_state!(
             self.regs(),
             self.pin,
-            offset,
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+            offset
         );
     }
 
@@ -1153,8 +1148,7 @@ pub fn set_state(port: Port, pin: u8, value: PinState) {
     set_state!(
         regs(port),
         pin,
-        offset,
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        offset
     );
 }
 
